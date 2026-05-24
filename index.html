@@ -1,0 +1,86 @@
+<!DOCTYPE html>  
+<html lang="pt-br">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Mega Life - Agendamento de Consultas</title>  
+    <link rel="stylesheet" href="/static/style.css">  
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">  
+</head>  
+<body>  
+    <div class="container">  
+        <!-- ===== HEADER ===== -->  
+        <header class="header">  
+            <div class="header-content">  
+                <h1>🏥 Mega Life</h1>  
+                <p>Sistema de Agendamento de Consultas</p>  
+            </div>  
+            <nav class="nav-tabs">  
+                <button class="tab-btn active" onclick="mostrarAba('consultas')" id="tab-consultas">  
+                    📅 Consultas  
+                </button>  
+                <button class="tab-btn" onclick="mostrarAba('pacientes')" id="tab-pacientes">  
+                    👤 Pacientes  
+                </button>  
+            </nav>  
+        </header>  
+
+        <!-- ===== ABA CONSULTAS ===== -->  
+        <section id="aba-consultas" class="aba active">  
+            <!-- Formulário de agendamento -->  
+            <div class="card form-card">  
+                <h2 id="form-consulta-title">📋 Nova Consulta</h2>  
+                <form id="consultaForm">  
+                    <input type="hidden" id="consulta-id">  
+
+                    <div class="form-grid">  
+                        <div class="form-group">  
+                            <label for="consulta-paciente">👤 Nome do Paciente</label>  
+                            <input type="text" id="consulta-paciente" placeholder="Ex: Maria Silva" required>  
+                        </div>  
+
+                        <div class="form-group">  
+                            <label for="consulta-medico">👨‍⚕️ Médico</label>  
+                            <select id="consulta-medico" required>  
+                                <option value="">Selecione um médico...</option>  
+                                <option value="Dr. Carlos Silva">Dr. Carlos Silva</option>  
+                                <option value="Dra. Ana Oliveira">Dra. Ana Oliveira</option>  
+                                <option value="Dr. Pedro Santos">Dr. Pedro Santos</option>  
+                                <option value="Dra. Maria Costa">Dra. Maria Costa</option>  
+                                <option value="Dr. João Souza">Dr. João Souza</option>  
+                                <option value="Dra. Julia Lima">Dra. Julia Lima</option>  
+                            </select>  
+                        </div>  
+
+                        <div class="form-group">  
+                            <label for="consulta-especialidade">🏥 Especialidade</label>  
+                            <select id="consulta-especialidade" required>  
+                                <option value="">Selecione...</option>  
+                                <option value="Clínico Geral">Clínico Geral</option>  
+                                <option value="Cardiologia">Cardiologia</option>  
+                                <option value="Pediatria">Pediatria</option>  
+                                <option value="Ortopedia">Ortopedia</option>  
+                                <option value="Dermatologia">Dermatologia</option>  
+                                <option value="Neurologia">Neurologia</option>  
+                            </select>  
+                        </div>  
+
+                        <div class="form-group">  
+                            <label for="consulta-data">📅 Data</label>  
+                            <input type="date" id="consulta-data" required>  
+                        </div>  
+
+                        <div class="form-group">  
+                            <label for="consulta-horario">🕐 Horário</label>  
+                            <input type="time" id="consulta-horario" required>  
+                        </div>  
+
+                        <div class="form-group">  
+                            <label for="consulta-status">📌 Status</label>  
+                            <select id="consulta-status">  
+                                <option value="agendada">📅 Agendada</option>  
+                                <option value="confirmada">✅ Confirmada</option>  
+                                <option value="realizada">✔️ Realizada</option>  
+                                <option value="cancelada">❌ Cancelada</option>  
+                            </select>  
+                        </div>  
