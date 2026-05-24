@@ -3,9 +3,9 @@
 Sistema de gestão de cadastro, Edição e Consultas médicas, desenvolvido em Go com PostgreSQL.
 
 ## TECNOLOGIAS
--**Backend:** Go (Net/http)
--**Banco de Dados:** PostgreSQL
--**Frontend:** HTML, CSS, JavaScript
+- **Backend:** Go (Net/http)
+- **Banco de Dados:** PostgreSQL
+- **Frontend:** HTML, CSS, JavaScript
 
 ## FUNCIONALIDADES
 - Agendamento e listagem de consultas médicas
@@ -17,8 +17,8 @@ Sistema de gestão de cadastro, Edição e Consultas médicas, desenvolvido em G
 ## COMO RODAR O PROJETO
 
 ### Pré-requisitos
--Go 1.22+
--PostgreSQL
+- Go 1.22+
+- PostgreSQL
 
 ### Configuração
 1. Clone o repositório:
@@ -32,17 +32,17 @@ DB_PASSWORD=sua_senha
 DB_NAME=saude
 
 3. Execute:
-go run main.go
+- go run main.go
 
 4. Acesse: http://localhost:8080
 
 ## ESTRUTURA DO PROJETO
 
 projeto-saude/
-├── database/       # Conexão com PostgreSQL
-├── handlers/       # Handlers HTTP
-├── migrations/     # Scripts SQL
-├── models/         # Structs dos modelos
-├── static/         # Frontend (HTML, CSS, JS)
-├── storage/        # Camada de acesso ao banco
-└── main.go         # Entrada da aplicação
+├── database/        #Conexão com PostgreSQL
+├── handlers/        #Handlers HTTP
+├── migrations/      #Scripts SQL
+├── models/          #Structs dos modelos
+├── static/          #Frontend (HTML, CSS, JS)
+├── storage/         #Camada de acesso ao banco
+└── main.go          #Entrada da aplicação
