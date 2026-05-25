@@ -22,14 +22,14 @@ Sistema de gestão de cadastro, Edição e Consultas médicas, desenvolvido em G
 
 ### Configuração
 1. Clone o repositório:
-git clone https://github.com/seu-usuário/projeto-saude.git
+- git clone https://github.com/seu-usuário/projeto-saude.git
 
 2. Crie o arquivo '.env' na raiz:
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=sua_senha
-DB_NAME=saude
+- DB_HOST=localhost
+- DB_PORT=5432
+- DB_USER=postgres
+- DB_PASSWORD=sua_senha
+- DB_NAME=saude
 
 3. Execute:
 - go run main.go
