@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Consulta — MediSystem</title>
+  <link rel="stylesheet" href="../styles/index.style.css">
+  <link rel="stylesheet" href="../styles/form.style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">🏥 MediSystem</div>
+    <nav>
+      <a href="../index.html">Inicio</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="form-container">
+      <div class="form-header">
+        <a href="../index.html" class="voltar">← Voltar</a>
+        <h1>Editar Consulta</h1>
+        <p>Atualize os dados da consulta</p>
+      </div>
+
+      <div id="mensagem" class="mensagem oculto"></div>
+
+      <div class="form-card">
+        <div class="campo">
+          <label for="paciente">👤 Paciente *</label>
+          <input type="text" id="paciente" placeholder="Nome completo do paciente">
+        </div>
+        <div class="campo">
+          <label for="medico">🩺 Medico *</label>
+          <input type="text" id="medico" placeholder="Nome do medico responsavel">
+        </div>
+        <div class="campo">
+        <label for="especialidade">🏥 Especialidade</label>
+        <input type="text" id="especialidade" placeholder="Ex: Cardiologia">
+        </div>
+        <div class="linha-dupla">
+          <div class="campo">
+            <label for="data">📅 Data *</label>
+            <input type="date" id="data">
+          </div>
+          <div class="campo">
+            <label for="hora">🕐 Hora</label>
+            <input type="time" id="hora">
+          </div>
+        </div>
+        <div class="campo">
+          <label for="descricao">📝 Descricao</label>
+          <textarea id="descricao" rows="3" placeholder="Motivo da consulta, observacoes..."></textarea>
+        </div>
+        <div class="campo">
+          <label for="status">📌 Status</label>
+          <select id="status">
+            <option value="agendada">Agendada</option>
+            <option value="realizada">Realizada</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <a href="../index.html" class="btn-cancelar">Cancelar</a>
+          <button onclick="atualizar()" class="btn-primary">💾 Salvar Alteracoes</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    async function carregarConsulta() {
+      if (!id) { mostrarMensagem('ID nao informado.', 'erro'); return; }
+      try {
+        const res = await fetch(`http://localhost:8080/consultas/${id}`);
+        if (!res.ok) { mostrarMensagem('Consulta nao encontrada.', 'erro'); return; }
+        const c = await res.json();
+
+        document.getElementById('paciente').value = c.paciente;
+        document.getElementById('medico').value = c.medico;
+        document.getElementById('especialidade').value = c.especialidade || '';
+        document.getElementById('data').value = c.data ? c.data.substring(0, 10) : '';
+        document.getElementById('hora').value = c.hora || '';
+        document.getElementById('descricao').value = c.descricao || '';
+        document.getElementById('status').value = c.status;
+      } catch (e) {
+        mostrarMensagem('Erro ao carregar consulta.', 'erro');
+      }
+    }
+
+    async function atualizar() {
+      const paciente = document.getElementById('paciente').value.trim();
+      const medico = document.getElementById('medico').value.trim();
+      const data = document.getElementById('data').value;
+
+      if (!paciente || !medico || !data) {
+        mostrarMensagem('Preencha os campos obrigatorios: Paciente, Medico e Data.', 'erro');
+        return;
+      }
+
+      const body = {
+        paciente,
+        medico,
+        especialidade: document.getElementById('especialidade').value.trim(),
+        data,
+        hora: document.getElementById('hora').value || '00:00',
+        descricao: document.getElementById('descricao').value.trim(),
+        status: document.getElementById('status').value,
+      };
+
+      try {
+        const res = await fetch(`http://localhost:8080/consultas/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (res.ok) {
+          mostrarMensagem('Consulta atualizada com sucesso! Redirecionando...', 'sucesso');
+          setTimeout(() => window.location.href = '../index.html', 1500);
+        } else {
+          const erro = await res.json();
+          mostrarMensagem('Erro: ' + erro.erro, 'erro');
+        }
+      } catch (e) {
+        mostrarMensagem('Erro ao conectar com o servidor.', 'erro');
+      }
+    }
+
+    function mostrarMensagem(texto, tipo) {
+      const el = document.getElementById('mensagem');
+      el.textContent = texto;
+      el.className = `mensagem ${tipo}`;
+    }
+
+    carregarConsulta();
+  </script>
+</body>
+</html>
