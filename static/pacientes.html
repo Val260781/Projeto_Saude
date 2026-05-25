@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pacientes — MediSystem</title>
+  <link rel="stylesheet" href="styles/index.style.css">
+  <style>
+    .tabela-wrapper {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    thead {
+      background: var(--primary);
+      color: white;
+    }
+
+    thead th {
+      padding: 14px 18px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--bg); }
+
+    tbody td {
+      padding: 13px 18px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    .td-muted { color: var(--text-muted); font-size: 0.85rem; }
+
+    .avatar-iniciais {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .td-nome {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nome-texto { font-weight: 600; }
+
+    .acoes {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sm-editar {
+      padding: 6px 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-sm-editar:hover { background: #c8e8e3; }
+
+    .btn-sm-deletar {
+      padding: 6px 12px;
+      background: var(--danger-light);
+      color: var(--danger);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-sm-deletar:hover { background: #fecaca; }
+
+    .tabela-vazio {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .tabela-vazio a { color: var(--primary); font-weight: 600; }
+
+    .resumo-total {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🏥 MediSystem</div>
+    <nav>
+      <a href="index.html">Consultas</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="pacientes.html" class="active">Pacientes</a>
+      <a href="forms/createConsulta.html">Nova Consulta</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="page-title">
+      <h1>Pacientes</h1>
+      <a href="forms/createPaciente.html" class="btn-primary">+ Novo Paciente</a>
+    </div>
+
+    <div class="filtros">
+      <input type="text" id="busca" placeholder="Buscar por nome ou CPF..."
+        onkeydown="if(event.key==='Enter') filtrar()">
+      <button class="btn-buscar" onclick="filtrar()">🔍 Buscar</button>
+      <button class="btn-limpar" onclick="limpar()">✖ Limpar</button>
+    </div>
+
+    <div id="mensagem" class="mensagem oculto"></div>
+    <p class="resumo-total" id="resumoTotal"></p>
+
+    <div class="tabela-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Paciente</th>
+            <th>CPF</th>
+            <th>Telefone</th>
+            <th>Email</th>
+            <th>Nascimento</th>
+            <th>Cadastro</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaBody">
+          <tr><td colspan="8" class="tabela-vazio">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const API = 'http://localhost:8080';
+    let todosPacientes = [];
+
+    async function carregarPacientes() {
+      try {
+        const res = await fetch(`${API}/pacientes`);
+        todosPacientes = await res.json() || [];
+        renderizar(todosPacientes);
+      } catch (e) {
+        document.getElementById('tabelaBody').innerHTML =
+          '<tr><td colspan="8" class="tabela-vazio" style="color:var(--danger)">Erro ao conectar com o servidor.</td></tr>';
+      }
+    }
+
+    function renderizar(lista) {
+      const body = document.getElementById('tabelaBody');
+      const resumo = document.getElementById('resumoTotal');
+      resumo.textContent = `${lista.length} paciente(s) encontrado(s)`;
+
+      if (!lista || lista.length === 0) {
+        body.innerHTML = `<tr><td colspan="8" class="tabela-vazio">
+          Nenhum paciente encontrado. <a href="forms/createPaciente.html">Cadastrar agora</a>
+        </td></tr>`;
+        return;
+      }
+
+      body.innerHTML = lista.map(p => {
+        const iniciais = p.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        return `
+          <tr>
+            <td class="td-muted">${p.id}</td>
+            <td>
+              <div class="td-nome">
+                <div class="avatar-iniciais">${iniciais}</div>
+                <div class="nome-texto">${p.nome}</div>
+              </div>
+            </td>
+            <td class="td-muted">${formatarCPF(p.cpf)}</td>
+            <td class="td-muted">${p.telefone || '--'}</td>
+            <td class="td-muted">${p.email || '--'}</td>
+            <td class="td-muted">${formatarData(p.data_nascimento)}</td>
+            <td class="td-muted">${formatarDataHora(p.data_cadastro)}</td>
+            <td>
+              <div class="acoes">
+                <a href="forms/editPaciente.html?id=${p.id}" class="btn-sm-editar">✏️ Editar</a>
+                <button onclick="deletar(${p.id}, '${p.nome}')" class="btn-sm-deletar">🗑️ Remover</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function filtrar() {
+      const busca = document.getElementById('busca').value.toLowerCase().trim();
+      const filtrados = todosPacientes.filter(p =>
+        p.nome.toLowerCase().includes(busca) || (p.cpf || '').includes(busca)
+      );
+      renderizar(filtrados);
+    }
+
+    function limpar() {
+      document.getElementById('busca').value = '';
+      renderizar(todosPacientes);
+    }
+
+    async function deletar(id, nome) {
+      if (!confirm(`Deseja remover o paciente "${nome}"?`)) return;
+      try {
+        await fetch(`${API}/pacientes/${id}`, { method: 'DELETE' });
+        mostrarMensagem('Paciente removido com sucesso!', 'sucesso');
+        carregarPacientes();
+      } catch (e) {
+        mostrarMensagem('Erro ao remover paciente.', 'erro');
+      }
+    }
+
+    function mostrarMensagem(texto, tipo) {
+      const el = document.getElementById('mensagem');
+      el.textContent = texto;
+      el.className = `mensagem ${tipo}`;
+      setTimeout(() => el.className = 'mensagem oculto', 3000);
+    }
+
+    function formatarCPF(cpf) {
+      if (!cpf) return '--';
+      return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+
+    function formatarData(data) {
+      if (!data) return '--';
+      const d = data.substring(0, 10).split('-');
+      return `${d[2]}/${d[1]}/${d[0]}`;
+    }
+
+    function formatarDataHora(dt) {
+      if (!dt) return '--';
+      const d = new Date(dt);
+      return d.toLocaleDateString('pt-BR');
+    }
+
+    carregarPacientes();
+  </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — MediSystem</title>
+  <link rel="stylesheet" href="styles/index.style.css">
+  <style>
+    /* ── Configuração da Página Dashboard── */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+
+    .stat-icon {
+      font-size: 2rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.total    { background: #e0f2fe; }
+    .stat-icon.agendada { background: #dbeafe; }
+    .stat-icon.realizada{ background: var(--success-light); }
+    .stat-icon.cancelada{ background: var(--danger-light); }
+
+    .stat-info { flex: 1; }
+    .stat-numero {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Seções do dashboard ── */
+    .dashboard-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 18px 22px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+
+    .section-header a {
+      font-size: 0.82rem;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .section-header a:hover { text-decoration: underline; }
+
+    /* ── Lista de próximas consultas ── */
+    .consulta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .consulta-row:last-child { border-bottom: none; }
+    .consulta-row:hover { background: var(--bg); }
+
+    .consulta-data-box {
+      text-align: center;
+      min-width: 48px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      padding: 6px 8px;
+    }
+
+    .consulta-dia {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .consulta-mes {
+      font-size: 0.7rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .consulta-info { flex: 1; }
+    .consulta-paciente { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    .consulta-medico   { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+    .consulta-hora {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── Gráfico de barras simples ── */
+    .grafico-barras {
+      padding: 20px 22px;
+    }
+
+    .barra-item {
+      margin-bottom: 16px;
+    }
+
+    .barra-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .barra-label span { color: var(--text-muted); font-weight: 400; }
+
+    .barra-track {
+      background: var(--bg);
+      border-radius: 99px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .barra-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .barra-fill.agendada  { background: #3b82f6; }
+    .barra-fill.realizada { background: var(--success); }
+    .barra-fill.cancelada { background: var(--danger); }
+
+    /* ── Lista de médicos ── */
+    .medico-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .medico-row:last-child { border-bottom: none; }
+    .medico-row:hover { background: var(--bg); }
+
+    .medico-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .medico-info { flex: 1; }
+    .medico-nome { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    .medico-esp  { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    .medico-crm  { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+
+    /* ── Vazio / loading ── */
+    .vazio-secao {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── Responsivo ── */
+    @media (max-width: 900px) {
+      .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+      .dashboard-row  { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 540px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🏥 MediSystem</div>
+    <nav>
+  <a href="index.html">Consultas</a>
+  <a href="dashboard.html" class="active">Dashboard</a>
+  <a href="pacientes.html">Pacientes</a>
+  <a href="forms/createConsulta.html">Nova Consulta</a>
+</nav>
+  </header>
+
+  <main>
+    <div class="page-title">
+      <h1>Dashboard</h1>
+      <span style="color:var(--text-muted);font-size:0.9rem" id="dataHoje"></span>
+    </div>
+
+    <!-- Cards de resumo -->
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <div class="stat-icon total">📋</div>
+        <div class="stat-info">
+          <div class="stat-numero" id="totalConsultas">--</div>
+          <div class="stat-label">Total de Consultas</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon agendada">📅</div>
+        <div class="stat-info">
+          <div class="stat-numero" id="totalAgendadas">--</div>
+          <div class="stat-label">Agendadas</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon realizada">✅</div>
+        <div class="stat-info">
+          <div class="stat-numero" id="totalRealizadas">--</div>
+          <div class="stat-label">Realizadas</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cancelada">❌</div>
+        <div class="stat-info">
+          <div class="stat-numero" id="totalCanceladas">--</div>
+          <div class="stat-label">Canceladas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Próximas consultas + Distribuição -->
+    <div class="dashboard-row">
+      <div class="section-card">
+        <div class="section-header">
+          <h2>📅 Próximas Consultas</h2>
+          <a href="index.html">Ver todas →</a>
+        </div>
+        <div id="proximasConsultas"><div class="vazio-secao">Carregando...</div></div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <h2>📊 Distribuição por Status</h2>
+        </div>
+        <div class="grafico-barras" id="graficoStatus">
+          <div class="vazio-secao">Carregando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Médicos cadastrados -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>🩺 Médicos Cadastrados</h2>
+        <span id="totalMedicos" style="font-size:0.82rem;color:var(--text-muted)"></span>
+      </div>
+      <div id="listaMedicos"><div class="vazio-secao">Carregando...</div></div>
+    </div>
+  </main>
+
+  <script>
+    const API = 'http://localhost:8080';
+
+    // Data de hoje formatada
+    document.getElementById('dataHoje').textContent = new Date().toLocaleDateString('pt-BR', {
+      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+    });
+
+    async function carregarDashboard() {
+      try {
+        const [resConsultas, resMedicos] = await Promise.all([
+          fetch(`${API}/consultas`),
+          fetch(`${API}/medicos`)
+        ]);
+
+        const consultas = await resConsultas.json();
+        const medicos   = await resMedicos.json();
+
+        renderResumo(consultas);
+        renderProximas(consultas);
+        renderGrafico(consultas);
+        renderMedicos(medicos);
+
+      } catch (e) {
+        document.getElementById('dataHoje').textContent = new Date().toLocaleDateString('pt-BR', {
+            weekday: 'long', 
+            day: '2-digit', 
+            month: 'long', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+      }
+    }
+
+    function renderResumo(consultas) {
+      const total     = consultas.length;
+      const agendadas = consultas.filter(c => c.status === 'agendada').length;
+      const realizadas= consultas.filter(c => c.status === 'realizada').length;
+      const canceladas= consultas.filter(c => c.status === 'cancelada').length;
+
+      animarNumero('totalConsultas', total);
+      animarNumero('totalAgendadas', agendadas);
+      animarNumero('totalRealizadas', realizadas);
+      animarNumero('totalCanceladas', canceladas);
+    }
+
+    function animarNumero(id, destino) {
+      const el = document.getElementById(id);
+      let atual = 0;
+      const passo = Math.ceil(destino / 20);
+      const timer = setInterval(() => {
+        atual = Math.min(atual + passo, destino);
+        el.textContent = atual;
+        if (atual >= destino) clearInterval(timer);
+      }, 40);
+    }
+
+    function renderProximas(consultas) {
+      const hoje = new Date().toISOString().substring(0, 10);
+      const proximas = consultas
+        .filter(c => c.status === 'agendada' && c.data >= hoje)
+        .sort((a, b) => a.data.localeCompare(b.data) || (a.hora || '').localeCompare(b.hora || ''))
+        .slice(0, 6);
+
+      const el = document.getElementById('proximasConsultas');
+      if (proximas.length === 0) {
+        el.innerHTML = '<div class="vazio-secao">Nenhuma consulta agendada futura.</div>';
+        return;
+      }
+
+      el.innerHTML = proximas.map(c => {
+        const d = c.data.substring(0, 10).split('-');
+        const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        return `
+          <div class="consulta-row">
+            <div class="consulta-data-box">
+              <div class="consulta-dia">${d[2]}</div>
+              <div class="consulta-mes">${meses[parseInt(d[1]) - 1]}</div>
+            </div>
+            <div class="consulta-info">
+              <div class="consulta-paciente">👤 ${c.paciente}</div>
+              <div class="consulta-medico">🩺 ${c.medico}${c.especialidade ? ' · ' + c.especialidade : ''}</div>
+            </div>
+            <div class="consulta-hora">${c.hora || '--'}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderGrafico(consultas) {
+      const total     = consultas.length || 1;
+      const agendadas = consultas.filter(c => c.status === 'agendada').length;
+      const realizadas= consultas.filter(c => c.status === 'realizada').length;
+      const canceladas= consultas.filter(c => c.status === 'cancelada').length;
+
+      const el = document.getElementById('graficoStatus');
+      el.innerHTML = `
+        <div class="barra-item">
+          <div class="barra-label">Agendadas <span>${agendadas} consultas</span></div>
+          <div class="barra-track"><div class="barra-fill agendada" style="width:0%" data-pct="${Math.round(agendadas/total*100)}%"></div></div>
+        </div>
+        <div class="barra-item">
+          <div class="barra-label">Realizadas <span>${realizadas} consultas</span></div>
+          <div class="barra-track"><div class="barra-fill realizada" style="width:0%" data-pct="${Math.round(realizadas/total*100)}%"></div></div>
+        </div>
+        <div class="barra-item">
+          <div class="barra-label">Canceladas <span>${canceladas} consultas</span></div>
+          <div class="barra-track"><div class="barra-fill cancelada" style="width:0%" data-pct="${Math.round(canceladas/total*100)}%"></div></div>
+        </div>`;
+
+      // Animação das barras após renderizar
+      setTimeout(() => {
+        el.querySelectorAll('.barra-fill').forEach(b => {
+          b.style.width = b.dataset.pct;
+        });
+      }, 100);
+    }
+
+    function renderMedicos(medicos) {
+      const el = document.getElementById('listaMedicos');
+      document.getElementById('totalMedicos').textContent = `${medicos?.length || 0} cadastrados`;
+
+      if (!medicos || medicos.length === 0) {
+        el.innerHTML = '<div class="vazio-secao">Nenhum médico cadastrado.</div>';
+        return;
+      }
+
+      el.style.display = 'grid';
+      el.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+
+      el.innerHTML = medicos.map(m => {
+        const iniciais = m.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        return `
+          <div class="medico-row">
+            <div class="medico-avatar">${iniciais}</div>
+            <div class="medico-info">
+              <div class="medico-nome">${m.nome}</div>
+              <div class="medico-esp">${m.especialidade || 'Especialidade não informada'}</div>
+            </div>
+            <div class="medico-crm">CRM ${m.crm}</div>
+          </div>`;
+      }).join('');
+    }
+
+    carregarDashboard();
+  </script>
+</body>
+</html>

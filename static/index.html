@@ -1,86 +1,208 @@
-<!DOCTYPE html>  
-<html lang="pt-br">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Mega Life - Agendamento de Consultas</title>  
-    <link rel="stylesheet" href="/static/style.css">  
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">  
-</head>  
-<body>  
-    <div class="container">  
-        <!-- ===== HEADER ===== -->  
-        <header class="header">  
-            <div class="header-content">  
-                <h1>🏥 Mega Life</h1>  
-                <p>Sistema de Agendamento de Consultas</p>  
-            </div>  
-            <nav class="nav-tabs">  
-                <button class="tab-btn active" onclick="mostrarAba('consultas')" id="tab-consultas">  
-                    📅 Consultas  
-                </button>  
-                <button class="tab-btn" onclick="mostrarAba('pacientes')" id="tab-pacientes">  
-                    👤 Pacientes  
-                </button>  
-            </nav>  
-        </header>  
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Consultas Medicas</title>
+  <link rel="stylesheet" href="styles/index.style.css">
+</head>
+<body>
+  <header>
+  <div class="logo">🏥 MediSystem</div>
+  <nav>
+  <a href="index.html" class="active">Inicio</a>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="pacientes.html">Pacientes</a>
+  <a href="forms/createConsulta.html">Nova Consulta</a>
+</nav>
+</header>
 
-        <!-- ===== ABA CONSULTAS ===== -->  
-        <section id="aba-consultas" class="aba active">  
-            <!-- Formulário de agendamento -->  
-            <div class="card form-card">  
-                <h2 id="form-consulta-title">📋 Nova Consulta</h2>  
-                <form id="consultaForm">  
-                    <input type="hidden" id="consulta-id">  
+  <main>
+    <div class="page-title">
+      <h1>Consultas Medicas</h1>
+      <a href="forms/createConsulta.html" class="btn-primary">+ Nova Consulta</a>
+    </div>
 
-                    <div class="form-grid">  
-                        <div class="form-group">  
-                            <label for="consulta-paciente">👤 Nome do Paciente</label>  
-                            <input type="text" id="consulta-paciente" placeholder="Ex: Maria Silva" required>  
-                        </div>  
+    <div class="filtros">
+      <input
+        type="text"
+        id="busca"
+        placeholder="Buscar por paciente ou medico..."
+        onkeydown="if(event.key==='Enter') filtrar()"
+      >
+      <select id="filtroStatus">
+        <option value="">Todos os status</option>
+        <option value="agendada">Agendada</option>
+        <option value="realizada">Realizada</option>
+        <option value="cancelada">Cancelada</option>
+      </select>
+      <button class="btn-buscar" onclick="filtrar()">🔍 Buscar</button>
+      <button class="btn-limpar" onclick="limparFiltros()">✖ Limpar</button>
+    </div>
 
-                        <div class="form-group">  
-                            <label for="consulta-medico">👨‍⚕️ Médico</label>  
-                            <select id="consulta-medico" required>  
-                                <option value="">Selecione um médico...</option>  
-                                <option value="Dr. Carlos Silva">Dr. Carlos Silva</option>  
-                                <option value="Dra. Ana Oliveira">Dra. Ana Oliveira</option>  
-                                <option value="Dr. Pedro Santos">Dr. Pedro Santos</option>  
-                                <option value="Dra. Maria Costa">Dra. Maria Costa</option>  
-                                <option value="Dr. João Souza">Dr. João Souza</option>  
-                                <option value="Dra. Julia Lima">Dra. Julia Lima</option>  
-                            </select>  
-                        </div>  
+    <div id="mensagem" class="mensagem oculto"></div>
+    <div id="lista" class="lista-consultas">
+      <div class="carregando">Carregando consultas...</div>
+    </div>
+  </main>
 
-                        <div class="form-group">  
-                            <label for="consulta-especialidade">🏥 Especialidade</label>  
-                            <select id="consulta-especialidade" required>  
-                                <option value="">Selecione...</option>  
-                                <option value="Clínico Geral">Clínico Geral</option>  
-                                <option value="Cardiologia">Cardiologia</option>  
-                                <option value="Pediatria">Pediatria</option>  
-                                <option value="Ortopedia">Ortopedia</option>  
-                                <option value="Dermatologia">Dermatologia</option>  
-                                <option value="Neurologia">Neurologia</option>  
-                            </select>  
-                        </div>  
+  <script>
+    function carregarPagina(pagina) {
+    fetch(pagina)
+        .then(response => response.text())
+        .then(html => {
+            // Extrair apenas o conteúdo principal da página carregada
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const novoConteudo = doc.querySelector('main') || doc.querySelector('.container');
+            
+            if (novoConteudo) {
+                document.querySelector('main').innerHTML = novoConteudo.innerHTML;
+                // Atualizar a URL sem recarregar
+                history.pushState({ pagina }, '', pagina);
+            }
+        })
+        .catch(error => console.error('Erro ao carregar página:', error));
+}
 
-                        <div class="form-group">  
-                            <label for="consulta-data">📅 Data</label>  
-                            <input type="date" id="consulta-data" required>  
-                        </div>  
+// Nos links do menu, usar:
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const pagina = this.getAttribute('href');
+        carregarPagina(pagina);
+    });
+});
 
-                        <div class="form-group">  
-                            <label for="consulta-horario">🕐 Horário</label>  
-                            <input type="time" id="consulta-horario" required>  
-                        </div>  
 
-                        <div class="form-group">  
-                            <label for="consulta-status">📌 Status</label>  
-                            <select id="consulta-status">  
-                                <option value="agendada">📅 Agendada</option>  
-                                <option value="confirmada">✅ Confirmada</option>  
-                                <option value="realizada">✔️ Realizada</option>  
-                                <option value="cancelada">❌ Cancelada</option>  
-                            </select>  
-                        </div>  
+    let todasConsultas = [];
+
+    async function carregarConsultas() {
+      try {
+        const res = await fetch('http://localhost:8080/consultas');
+        todasConsultas = await res.json();
+        renderizar(todasConsultas);
+      } catch (e) {
+        document.getElementById('lista').innerHTML =
+          '<div class="erro">Erro ao conectar com o servidor. Verifique se o Go esta rodando.</div>';
+      }
+    }
+
+    function renderizar(consultas) {
+      const lista = document.getElementById('lista');
+      if (!consultas || consultas.length === 0) {
+        lista.innerHTML = '<div class="vazio">Nenhuma consulta encontrada. <a href="forms/createConsulta.html">Criar agora</a></div>';
+        return;
+      }
+      lista.innerHTML = consultas.map(c => `
+        <div class="card">
+          <div class="card-header">
+            <span class="badge ${c.status}">${c.status}</span>
+            <span class="card-id">#${c.id}</span>
+          </div>
+          <div class="card-body">
+            <div class="info"><span>👤 Paciente</span><strong>${c.paciente}</strong></div>
+              <div class="info"><span>🩺 Medico</span><strong>${c.medico}</strong></div>
+              <div class="info"><span>🏥 Especialidade</span><strong>${c.especialidade || 'Não informada'}</strong></div>
+              <div class="info"><span>📅 Data</span><strong>${formatarData(c.data)}</strong></div>
+            <div class="info"><span>🕐 Hora</span><strong>${formatarHora(c.hora)|| '--'}</strong></div>
+            ${c.descricao ? `<div class="descricao">${c.descricao}</div>` : ''}
+          </div>
+          <div class="card-actions">
+            <a href="forms/updateConsulta.html?id=${c.id}" class="btn-editar">✏️ Editar</a>
+            <button onclick="deletar(${c.id})" class="btn-deletar">🗑️ Remover</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filtrar() {
+      const busca = document.getElementById('busca').value.toLowerCase().trim();
+      const status = document.getElementById('filtroStatus').value;
+      const filtradas = todasConsultas.filter(c =>
+        (!busca || c.paciente.toLowerCase().includes(busca) || c.medico.toLowerCase().includes(busca)) &&
+        (!status || c.status === status)
+      );
+      renderizar(filtradas);
+    }
+
+    function limparFiltros() {
+      document.getElementById('busca').value = '';
+      document.getElementById('filtroStatus').value = '';
+      renderizar(todasConsultas);
+    }
+
+    async function deletar(id) {
+      if (!confirm('Deseja remover esta consulta?')) return;
+      try {
+        await fetch(`http://localhost:8080/consultas/${id}`, { method: 'DELETE' });
+        mostrarMensagem('Consulta removida com sucesso!', 'sucesso');
+        carregarConsultas();
+      } catch (e) {
+        mostrarMensagem('Erro ao remover consulta.', 'erro');
+      }
+    }
+
+    function mostrarMensagem(texto, tipo) {
+      const el = document.getElementById('mensagem');
+      el.textContent = texto;
+      el.className = `mensagem ${tipo}`;
+      setTimeout(() => el.className = 'mensagem oculto', 3000);
+    }
+
+    function formatarData(data) {
+      if (!data) return '--';
+      const d = data.substring(0, 10).split('-');
+      return `${d[2]}/${d[1]}/${d[0]}`;
+    }
+    function formatarHora(hora) {
+  if (!hora) return '--';
+  // Se for ISO: "0000-01-01T09:25:00Z" ou "09:25:00"
+  if (hora.includes('T')) {
+    return hora.split('T')[1].substring(0, 5);
+  }
+  // Se já vier só "09:25"
+  return hora.substring(0, 5);
+}
+
+    carregarConsultas();
+  </script>
+  <!-- ===== RODAPÉ ===== -->  
+<footer>  
+  <div class="footer-container">  
+    <!-- Coluna 1 - Sobre a empresa -->  
+    <div class="footer-col">  
+      <h3>🏥 MediSystem</h3>  
+      <p>Sistema inteligente de gestão de consultas médicas.   
+      Facilitando o agendamento e acompanhamento de pacientes   
+      e profissionais de saúde.</p>  
+    </div>  
+
+    <!-- Coluna 2 - Contato -->  
+    <div class="footer-col">  
+      <h3>📞 Contato</h3>  
+      <ul>  
+        <li>📞 (62) 99999-8888</li>  
+        <li>📱 (62) 98888-7777</li>  
+        <li>✉️ contato@medisystem.com.br</li>  
+        <li>🌐 www.medisystem.com.br</li>  
+      </ul>  
+    </div>  
+
+    <!-- Coluna 3 - Endereço -->  
+    <div class="footer-col">  
+      <h3>📍 Endereço</h3>  
+      <ul>  
+        <li>Rua da Saúde, 123</li>  
+        <li>Campus Samambaia</li>  
+        <li>Goiânia - GO</li>  
+        <li>CEP: 74000-000</li>
+</body>
+</html>
+      </ul>  
+    </div>  
+  </div>  
+  <div class="footer-bottom">  
+    <p>&copy; 2026 MediSystem. Todos os direitos reservados.</p>  
+  </div>
+    
